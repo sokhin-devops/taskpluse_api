@@ -18,7 +18,7 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenApiConfig {
 
-    private static final String LOCAL_SERVER_URL = "http://localhost:8081";
+    private static final String LOCAL_SERVER_URL = "http://localhost:8082";
 
     @Bean
     public OpenAPI taskPulseOpenAPI() {
