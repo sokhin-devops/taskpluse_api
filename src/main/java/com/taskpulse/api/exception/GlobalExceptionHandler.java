@@ -26,6 +26,10 @@ import jakarta.servlet.http.HttpServletRequest;
  *
  * <p>The framework-level handlers below matter: without them the catch-all would turn
  * Spring's own 404/400/405 signals into misleading 500s.
+ *
+ * <p>401 and 403 are absent on purpose. Those are raised inside the security filter
+ * chain, before the dispatcher servlet runs, so this advice never sees them;
+ * {@code RestAuthenticationErrorHandler} renders them in the same shape instead.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,9 +38,30 @@ public class GlobalExceptionHandler {
 
     // ---------------------------------------------------------------- domain
 
-    @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<ApiError> handleTaskNotFound(TaskNotFoundException ex, HttpServletRequest request) {
+    @ExceptionHandler({ TaskNotFoundException.class, TagNotFoundException.class })
+    public ResponseEntity<ApiError> handleNotFound(RuntimeException ex, HttpServletRequest request) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    public ResponseEntity<ApiError> handleEmailTaken(EmailAlreadyUsedException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError> handleBadCredentials(InvalidCredentialsException ex,
+                                                         HttpServletRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    /**
+     * Rejected query parameters, e.g. an unknown sort field or a page size over the cap.
+     * The service layer signals these with a plain IllegalArgumentException.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex,
+                                                          HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     // ------------------------------------------------------------ validation
@@ -51,7 +76,7 @@ public class GlobalExceptionHandler {
         ApiError body = new ApiError(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                "Validation failed for the submitted task",
+                "Validation failed for the submitted payload",
                 request.getRequestURI(),
                 fieldErrors);
         return ResponseEntity.badRequest().body(body);
