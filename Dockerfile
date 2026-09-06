@@ -27,8 +27,20 @@ WORKDIR /app
 # Copy the generated Spring Boot JAR
 COPY --from=builder /app/target/*.jar app.jar
 
+# An image is only ever run on a server, so it defaults to the production profile.
+# The local profile is for `mvn spring-boot:run`, not for a container.
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# Container memory is the ceiling the JVM should size its heap against, not the
+# host's. Without this a 512 MB container is handed a heap it cannot honour.
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75"
+
+# Nothing here needs root. Alpine's `nobody` avoids adding a user just to drop to it.
+USER nobody
+
 # Spring Boot default port
 EXPOSE 8082
 
-# Run application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Shell form so $JAVA_OPTS is expanded; exec so java still receives SIGTERM as PID 1
+# and Spring runs its shutdown hooks instead of being killed after the stop timeout.
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
