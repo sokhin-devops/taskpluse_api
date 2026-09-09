@@ -20,7 +20,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ CI BUILD SUCCESS'
+            echo '✅ CI BUILD SUCCESS test github webhook'
         }
 
         failure {
