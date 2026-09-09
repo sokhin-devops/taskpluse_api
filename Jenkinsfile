@@ -6,7 +6,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -22,6 +21,12 @@ pipeline {
         stage('Package') {
             steps {
                 sh './mvnw clean package -DskipTests'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t taskpluse-api:${BUILD_NUMBER} .'
             }
         }
     }
