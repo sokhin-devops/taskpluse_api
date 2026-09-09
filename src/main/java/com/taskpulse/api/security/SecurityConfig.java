@@ -16,11 +16,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 /**
  * Stateless bearer-token security for the TaskPulse API.
  *
- * <p>There is deliberately no {@code AuthenticationManager} here. The only credential
- * check in the application happens once, in {@code AuthService#login}, which compares the
- * submitted password against the stored hash with {@link PasswordEncoder} directly. Every
- * later request is authenticated by {@link JwtAuthenticationFilter} instead, so wiring up
- * a provider chain would add moving parts that nothing calls.</p>
+ * <p>
+ * There is deliberately no {@code AuthenticationManager} here. The only
+ * credential
+ * check in the application happens once, in {@code AuthService#login}, which
+ * compares the
+ * submitted password against the stored hash with {@link PasswordEncoder}
+ * directly. Every
+ * later request is authenticated by {@link JwtAuthenticationFilter} instead, so
+ * wiring up
+ * a provider chain would add moving parts that nothing calls.
+ * </p>
  */
 @Configuration
 @EnableWebSecurity
@@ -34,7 +40,11 @@ public class SecurityConfig {
 			"/v3/api-docs/**",
 			"/swagger-ui.html",
 			"/swagger-ui/**",
-			"/error"
+			"/error",
+			"/auth/**",
+			"/swagger-ui/**",
+			"/v3/api-docs/**",
+			"/actuator/health"
 	};
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -60,6 +70,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						// Preflight carries no Authorization header of its own.
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
 						.requestMatchers(PUBLIC_PATHS).permitAll()
 						.anyRequest().authenticated())
 				.exceptionHandling(handling -> handling

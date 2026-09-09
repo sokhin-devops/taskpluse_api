@@ -76,8 +76,25 @@ stage('Deploy to Production') {
                     -p 127.0.0.1:8082:8082 \
                     registry.sokhin.site/docker-hosted/taskpluse-api:${BUILD_NUMBER}
 
-                echo '=== Deployment complete ==='
-                docker ps --filter name=taskpluse-api
+                echo '=== Waiting for application ==='
+                sleep 10
+
+                echo '=== Health check ==='
+
+                for i in 1 2 3 4 5; do
+                    if curl -fsS http://127.0.0.1:8082/actuator/health; then
+                        echo
+                        echo '✅ Application is healthy'
+                        exit 0
+                    fi
+
+                    echo 'Application not ready yet...'
+                    sleep 5
+                done
+
+                echo '❌ Health check failed'
+                docker logs --tail 100 taskpluse-api
+                exit 1
                 "
         '''
     }
