@@ -51,6 +51,37 @@ stage('Docker Push') {
         }
     }
 }
+stage('Deploy to Production') {
+    steps {
+        sh '''
+            ssh -i /var/jenkins_home/.ssh/id_ed25519 \
+                -o StrictHostKeyChecking=no \
+                root@64.177.41.133 \
+                "
+                set -e
+
+                echo '=== Pulling image ==='
+                docker pull registry.sokhin.site/docker-hosted/taskpluse-api:${BUILD_NUMBER}
+
+                echo '=== Stopping old container ==='
+                docker stop taskpluse-api || true
+                docker rm taskpluse-api || true
+
+                echo '=== Starting new container ==='
+                docker run -d \
+                    --name taskpluse-api \
+                    --restart unless-stopped \
+                    --env-file /root/taskpluse-api.env \
+                    --network taskpluse-network \
+                    -p 127.0.0.1:8082:8082 \
+                    registry.sokhin.site/docker-hosted/taskpluse-api:${BUILD_NUMBER}
+
+                echo '=== Deployment complete ==='
+                docker ps --filter name=taskpluse-api
+                "
+        '''
+    }
+}
     }
 
     post {
