@@ -25,10 +25,32 @@ pipeline {
         }
 
         stage('Docker Build') {
-            steps {
-                sh 'docker build -t taskpluse-api:${BUILD_NUMBER} .'
-            }
+    steps {
+        sh 'docker build -t registry.sokhin.site/docker-hosted/taskpluse-api:${BUILD_NUMBER} .'
+    }
+}
+
+stage('Docker Push') {
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'nexus-registry',
+                usernameVariable: 'NEXUS_USERNAME',
+                passwordVariable: 'NEXUS_PASSWORD'
+            )
+        ]) {
+            sh '''
+                echo "$NEXUS_PASSWORD" | docker login registry.sokhin.site \
+                    -u "$NEXUS_USERNAME" \
+                    --password-stdin
+
+                docker push registry.sokhin.site/docker-hosted/taskpluse-api:${BUILD_NUMBER}
+
+                docker logout registry.sokhin.site
+            '''
         }
+    }
+}
     }
 
     post {
