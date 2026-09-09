@@ -1,30 +1,42 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('CI Test') {
+        stage('Build & Test') {
             steps {
-                echo '================================='
-                echo 'TaskPluse CI Pipeline'
-                echo 'Repository checkout successful!'
-                echo '================================='
+                sh './mvnw clean test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh './mvnw clean package -DskipTests'
             }
         }
     }
 
     post {
         success {
-            echo '✅ CI BUILD SUCCESS test github webhook'
+            echo '================================='
+            echo '✅ TaskPluse CI SUCCESS'
+            echo '================================='
         }
 
         failure {
-            echo '❌ CI BUILD FAILED'
+            echo '================================='
+            echo '❌ TaskPluse CI FAILED'
+            echo '================================='
         }
     }
 }
