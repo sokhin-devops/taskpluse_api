@@ -9,6 +9,7 @@
 		<relativePath/>
 	</parent>
 
+	
 	<groupId>com.taskpulse</groupId>
 	<artifactId>taskpulse_api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
