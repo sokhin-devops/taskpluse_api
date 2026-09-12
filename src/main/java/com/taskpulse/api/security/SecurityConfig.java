@@ -43,7 +43,8 @@ public class SecurityConfig {
 			"/error",
 			"/auth/**",
 			"/v3/api-docs/**",
-			"/actuator/health"
+			"/actuator/health",
+			"/actuator/prometheus"
 	};
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
