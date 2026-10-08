@@ -44,6 +44,8 @@ public class SecurityConfig {
 			"/auth/**",
 			"/v3/api-docs/**",
 			"/actuator/health",
+			// Kubernetes probes: /actuator/health/liveness and /actuator/health/readiness.
+			"/actuator/health/**",
 			"/actuator/prometheus"
 	};
 
