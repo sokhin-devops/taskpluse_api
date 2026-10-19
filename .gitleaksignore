@@ -2,6 +2,9 @@
 # line (commit:file:rule:line) - only that exact finding is ignored, the rule
 # itself stays on for everything else.
 
-# pom.xml:42 is the comment "<!-- JWT: api is compile-scope, impl/jackson are
-# runtime-only by design. -->" - the generic rule read "api ..." as an API key.
+# pom.xml:42 is an XML comment about the JWT library scopes. The generic rule
+# reads the word after "JWT:" as an API key. No secret.
 a8bbf1f06b4daef81dac2ec71fe3f6e0f5ed0e26:pom.xml:generic-api-key:42
+
+# The first version of this file quoted that same comment, so it matched too.
+c1ca7157e953ce4dcd019f57cd49ba5fc17a1ab6:.gitleaksignore:generic-api-key:5
