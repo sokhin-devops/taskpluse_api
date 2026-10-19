@@ -3,7 +3,7 @@
 // and checks GitHub for new commits every 5 minutes.
 //
 //   Checkout -> Gitleaks -> Unit tests -> Dependency scan -> Build image
-//            -> Image scan -> Push to Nexus
+//            -> Image scan -> Push to Nexus -> Start deploy (taskpluse-deploy job)
 //
 // Shell steps use single quotes so values like the Nexus password are expanded
 // by the shell from the environment, never pasted into the script by Groovy -
@@ -104,6 +104,17 @@ pipeline {
                         docker logout ${REGISTRY}
                     '''
                 }
+            }
+        }
+
+        stage('Start deploy') {
+            steps {
+                // CD is its own job (taskpluse_deploy/Jenkinsfile): staging, smoke test,
+                // approval, prod. Don't wait for it - it pauses for a person.
+                build job: 'taskpluse-deploy', wait: false, parameters: [
+                    string(name: 'APP', value: 'api'),
+                    string(name: 'TAG', value: env.TAG)
+                ]
             }
         }
     }
