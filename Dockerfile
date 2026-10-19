@@ -22,6 +22,16 @@ RUN mvn clean package -DskipTests -B
 
 
 # =========================
+# Test stage - CI only: docker build --target test .
+# Runs the unit tests with exactly the Maven and JDK the image is built with.
+# A normal build never reaches it, so the runtime image is unaffected.
+# =========================
+FROM builder AS test
+
+RUN mvn test -B
+
+
+# =========================
 # Stage 2: Runtime
 # =========================
 FROM eclipse-temurin:17.0.20.1_1-jre-alpine

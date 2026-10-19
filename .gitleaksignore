@@ -1,0 +1,7 @@
+# Gitleaks findings reviewed and accepted as false positives. One fingerprint per
+# line (commit:file:rule:line) - only that exact finding is ignored, the rule
+# itself stays on for everything else.
+
+# pom.xml:42 is the comment "<!-- JWT: api is compile-scope, impl/jackson are
+# runtime-only by design. -->" - the generic rule read "api ..." as an API key.
+a8bbf1f06b4daef81dac2ec71fe3f6e0f5ed0e26:pom.xml:generic-api-key:42
