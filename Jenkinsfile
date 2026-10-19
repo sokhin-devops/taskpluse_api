@@ -59,8 +59,11 @@ pipeline {
                 // Maven's own jars and its download cache are skipped - only what
                 // ships counts. Report HIGH and CRITICAL; fail only on CRITICAL
                 // that has a fix available - something we can actually act on.
+                // --scanners vuln: secrets are Gitleaks' job; Trivy's secret
+                // scanner would only slow this down. --timeout: the first run
+                // (and every 3 days) downloads the Java DB, which takes minutes.
                 sh '''
-                    SCAN="--pkg-types library --skip-dirs /usr/share/maven --skip-dirs /root/.m2 --no-progress"
+                    SCAN="--scanners vuln --pkg-types library --skip-dirs /usr/share/maven --skip-dirs /root/.m2 --timeout 15m --no-progress"
                     trivy image $SCAN --severity HIGH,CRITICAL taskpluse-api-test:${TAG}
                     trivy image $SCAN --severity CRITICAL --ignore-unfixed --exit-code 1 --quiet taskpluse-api-test:${TAG}
                 '''
@@ -82,9 +85,10 @@ pipeline {
         stage('Image scan (Trivy)') {
             steps {
                 // The whole image: OS packages of the base image too, not just our jar.
+                // Secret scanning stays on here: it catches a key baked into a layer.
                 sh '''
-                    trivy image --severity HIGH,CRITICAL --no-progress ${IMAGE}:${TAG}
-                    trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 --no-progress --quiet ${IMAGE}:${TAG}
+                    trivy image --severity HIGH,CRITICAL --timeout 15m --no-progress ${IMAGE}:${TAG}
+                    trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 --timeout 15m --no-progress --quiet ${IMAGE}:${TAG}
                 '''
             }
         }
